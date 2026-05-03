@@ -31,18 +31,21 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Install Graphviz and PlantUML
+      - name: Install Graphviz
         run: |
           sudo apt-get update
-          sudo apt-get install -y graphviz plantuml
+          sudo apt-get install -y graphviz
+
+      - name: Download latest PlantUML
+        run: |
+          curl -L -o plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
 
       - name: Generate SVG diagrams
         run: |
           mkdir -p docs/generated/diagrams
-          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/context/*.puml
-          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/container/*.puml
-          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/component/*.puml
-          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/code/*.puml
+          find diagrams -name "*.puml" -print0 | while IFS= read -r -d '' file; do
+            java -jar plantuml.jar -tsvg -o "$(pwd)/docs/generated/diagrams" "$file"
+          done
 
       - name: Commit generated diagrams
         if: github.event_name == 'push'
@@ -50,5 +53,9 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add docs/generated/diagrams/*.svg
-          git diff --cached --quiet || git commit -m "Generate PlantUML diagrams"
-          git push
+          if git diff --cached --quiet; then
+            echo "No generated diagram changes"
+          else
+            git commit -m "Generate PlantUML diagrams"
+            git push
+          fi
