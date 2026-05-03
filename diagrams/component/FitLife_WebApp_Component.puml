@@ -1,0 +1,27 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+Container(web, "Web Application", "Java / Spring", "Веб-приложение FitLife")
+ContainerDb(db, "Database", "PostgreSQL", "Хранит данные пользователей и расписаний")
+Container(payment, "Payment Service", "Node.js", "Обрабатывает платежи")
+
+System_Boundary(webBoundary, "Web Application") {
+    Component(authController, "AuthController", "Spring MVC Controller", "Аутентификация и авторизация")
+    Component(userController, "UserController", "Spring MVC Controller", "Управление профилями пользователей")
+    Component(scheduleController, "ScheduleController", "Spring MVC Controller", "Управление расписанием занятий")
+    Component(paymentController, "PaymentController", "Spring MVC Controller", "Инициирует платежи")
+    Component(serviceLayer, "Service Layer", "Java", "Бизнес-логика")
+    Component(repositoryLayer, "Repository Layer", "Spring Data", "Доступ к данным")
+}
+
+Rel(userController, serviceLayer, "Использует")
+Rel(authController, serviceLayer, "Использует")
+Rel(scheduleController, serviceLayer, "Использует")
+Rel(paymentController, payment, "Отправляет запрос на оплату", "HTTPS")
+
+Rel(serviceLayer, repositoryLayer, "Читает и пишет данные")
+Rel(repositoryLayer, db, "Работает с данными", "SQL")
+
+@enduml

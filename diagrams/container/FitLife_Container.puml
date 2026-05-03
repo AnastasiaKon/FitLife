@@ -1,0 +1,29 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(user, "User", "Пользователь фитнес-клуба")
+Person(admin, "Administrator", "Администратор")
+
+System_Boundary(fitlife, "FitLife System") {
+    Container(web, "Web Application", "Java / Spring", "Веб-интерфейс")
+    Container(mobile, "Mobile Application", "Kotlin / Swift", "Мобильное приложение")
+    Container(payment, "Payment Service", "Node.js", "Обработка платежей")
+    ContainerDb(db, "Database", "PostgreSQL", "Пользователи, членства, расписание")
+}
+
+System_Ext(bank, "Bank System", "Внешняя банковская система")
+System_Ext(api, "Third-Party Fitness API", "Внешний фитнес API")
+
+Rel(user, web, "Использует", "HTTPS")
+Rel(user, mobile, "Использует", "HTTPS")
+Rel(admin, web, "Администрирует", "HTTPS")
+
+Rel(web, db, "Читает и пишет данные", "SQL")
+Rel(mobile, db, "Читает и пишет данные", "SQL")
+Rel(web, payment, "Запускает оплату", "HTTPS")
+Rel(payment, bank, "Проводит платёж", "HTTPS")
+Rel(web, api, "Получает фитнес-данные", "REST")
+
+@enduml
