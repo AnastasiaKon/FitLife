@@ -1,0 +1,54 @@
+name: Generate PlantUML diagrams
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "diagrams/**/*.puml"
+      - ".github/workflows/plantuml.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "diagrams/**/*.puml"
+      - ".github/workflows/plantuml.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  generate-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Install Graphviz and PlantUML
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz plantuml
+
+      - name: Generate SVG diagrams
+        run: |
+          mkdir -p docs/generated/diagrams
+          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/context/*.puml
+          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/container/*.puml
+          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/component/*.puml
+          plantuml -tsvg -o ../../docs/generated/diagrams diagrams/code/*.puml
+
+      - name: Commit generated diagrams
+        if: github.event_name == 'push'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/generated/diagrams/*.svg
+          git diff --cached --quiet || git commit -m "Generate PlantUML diagrams"
+          git push
