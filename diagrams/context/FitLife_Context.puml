@@ -1,0 +1,19 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(user, "User", "Пользователь фитнес-клуба")
+Person(admin, "Administrator", "Администратор")
+
+System(fitlife, "FitLife System", "Управление членством, расписанием и платежами")
+
+System_Ext(bank, "Bank System", "Обработка платежей")
+System_Ext(api, "Third-Party Fitness API", "Интеграция с внешними фитнес-данными")
+
+Rel(user, fitlife, "Использует")
+Rel(admin, fitlife, "Администрирует")
+Rel(fitlife, bank, "Проводит платежи", "HTTPS")
+Rel(fitlife, api, "Получает фитнес-данные", "REST")
+
+@enduml
